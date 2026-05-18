@@ -1,71 +1,37 @@
-Noto Kufi Arabic Variable Font
-==============================
+# Mansht
 
-This download contains Noto Kufi Arabic as both a variable font and static fonts.
+Modern AI-powered news and media platform focused on smart content delivery, scalable architecture, and real-time data processing.
 
-Noto Kufi Arabic is a variable font with this axis:
-  wght
+## Overview
 
-This means all the styles are contained in a single file:
-  Noto_Kufi_Arabic/NotoKufiArabic-VariableFont_wght.ttf
+Mansht combines multiple services and intelligent pipelines to deliver a seamless digital news experience.  
+The platform is designed with modular architecture to support scalability, automation, and future integrations.
 
-If your app fully supports variable fonts, you can now pick intermediate styles
-that aren’t available as static fonts. Not all apps support variable fonts, and
-in those cases you can use the static font files for Noto Kufi Arabic:
-  Noto_Kufi_Arabic/static/NotoKufiArabic-Thin.ttf
-  Noto_Kufi_Arabic/static/NotoKufiArabic-ExtraLight.ttf
-  Noto_Kufi_Arabic/static/NotoKufiArabic-Light.ttf
-  Noto_Kufi_Arabic/static/NotoKufiArabic-Regular.ttf
-  Noto_Kufi_Arabic/static/NotoKufiArabic-Medium.ttf
-  Noto_Kufi_Arabic/static/NotoKufiArabic-SemiBold.ttf
-  Noto_Kufi_Arabic/static/NotoKufiArabic-Bold.ttf
-  Noto_Kufi_Arabic/static/NotoKufiArabic-ExtraBold.ttf
-  Noto_Kufi_Arabic/static/NotoKufiArabic-Black.ttf
+## Features
 
-Get started
------------
+- AI-assisted content workflows
+- Modern frontend experience
+- API-based architecture
+- Automated data processing
+- Scalable service structure
+- Database integration
+- Modular backend services
 
-1. Install the font files you want to use
+## Tech Stack
 
-2. Use your app's font picker to view the font family and all the
-available styles
+- Frontend: React / Modern JavaScript
+- Backend: Node.js
+- Database Integration
+- Machine Learning Components
+- Web Scraping Pipelines
+- REST APIs
 
-Learn more about variable fonts
--------------------------------
+## Project Structure
 
-  https://developers.google.com/web/fundamentals/design-and-ux/typography/variable-fonts
-  https://variablefonts.typenetwork.com
-  https://medium.com/variable-fonts
-
-In desktop apps
-
-  https://theblog.adobe.com/can-variable-fonts-illustrator-cc
-  https://helpx.adobe.com/nz/photoshop/using/fonts.html#variable_fonts
-
-Online
-
-  https://developers.google.com/fonts/docs/getting_started
-  https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Fonts/Variable_Fonts_Guide
-  https://developer.microsoft.com/en-us/microsoft-edge/testdrive/demos/variable-fonts
-
-Installing fonts
-
-  MacOS: https://support.apple.com/en-us/HT201749
-  Linux: https://www.google.com/search?q=how+to+install+a+font+on+gnu%2Blinux
-  Windows: https://support.microsoft.com/en-us/help/314960/how-to-install-or-remove-a-font-in-windows
-
-Android Apps
-
-  https://developers.google.com/fonts/docs/android
-  https://developer.android.com/guide/topics/ui/look-and-feel/downloadable-fonts
-
-License
--------
-Please read the full license text (OFL.txt) to understand the permissions,
-restrictions and requirements for usage, redistribution, and modification.
-
-You can use them in your products & projects – print or digital,
-commercial or otherwise.
-
-This isn't legal advice, please consider consulting a lawyer and see the full
-license for all details.
+```bash
+/api
+/services
+/DB
+/ML
+/news-ui
+/scraper
