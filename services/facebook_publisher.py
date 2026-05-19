@@ -7,7 +7,7 @@ from tenacity import (
     stop_after_attempt,
     wait_exponential,
 )
-
+from utils.text_filter import sanitize_text
 logger = logging.getLogger(__name__)
 
 
@@ -41,8 +41,11 @@ class FacebookPublisher:
             logger.warning("Facebook publish skipped — no webhook URL")
             return False
 
+        safe_title = sanitize_text(post['title'])
+        safe_content = sanitize_text((post.get('content') or '')[:500])
+
         payload = {
-            "message":   f"📰 {post['title']}\n\n{(post.get('content') or '')[:500]}",
+            "message": f"📰 {safe_title}\n\n{safe_content}",
             "image_url": post.get("image_url"),
         }
 
