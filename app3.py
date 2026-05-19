@@ -3,10 +3,12 @@ import random
 import time
 from functools import partial
 from threading import Thread
+
 import requests
 from dotenv import load_dotenv
 from supabase import create_client
-from config.settings import SCRAPE_INTERVAL_MIN, SCRAPE_INTERVAL_MAX
+
+from config.settings import SCRAPE_INTERVAL_MIN, SCRAPE_INTERVAL_MAX, MAX_SCRAPE_PAGES
 from DB.cloud_storage import upload_image
 from image.composer import generate_post_image
 from scraper.extractor import get_html, extract_news
@@ -84,7 +86,6 @@ def _generate_image(
     category, confidence, content,
     send_to_telegram=False,
 ):
-    """Wrapper that injects all runtime deps into image/composer.py."""
     return generate_post_image(
         title=title,
         image_url=image_url,
@@ -112,7 +113,7 @@ def run() -> None:
 
             html  = get_html()
             limit = 5 if first_run else 50
-            news  = extract_news(html, limit=limit)
+            news  = extract_news(html, limit=limit, max_pages=MAX_SCRAPE_PAGES)
             first_run = False
 
             if news:
