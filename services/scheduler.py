@@ -13,10 +13,19 @@ _priority_tg = PriorityTelegramPublisher()
 
 
 def _publish_one(post: dict) -> None:
+    import time
+    from config.settings import MAX_QUEUE_AGE_HOURS
 
-    post_id          = post["id"]
-    telegram_status  = "pending"
-    facebook_status  = "pending"
+    post_id         = post["id"]
+    telegram_status = "pending"
+    facebook_status = "pending"
+
+    age_hours = (time.time() - post.get("created_at", time.time())) / 3600
+    if age_hours > MAX_QUEUE_AGE_HOURS:
+        logger.warning(
+            f"⏰ Publishing OVERDUE article | id={post_id} "
+            f"| age={age_hours:.1f}h | {post['title'][:50]}"
+        )
 
     try:
         _priority_tg.publish(post)
@@ -53,7 +62,7 @@ def _publish_one(post: dict) -> None:
 
 
 def publishing_worker() -> None:
-    
+
     logger.info("🚀 Publishing worker started (real-time mode)")
 
     while True:
@@ -61,7 +70,7 @@ def publishing_worker() -> None:
             post = _queue.get_next_post()
             if post:
                 _publish_one(post)
-                continue          
+                continue         
         except Exception as exc:
             logger.error(f"⚠️ Publishing worker error: {exc}", exc_info=True)
 
