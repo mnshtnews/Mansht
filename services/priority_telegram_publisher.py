@@ -2,7 +2,7 @@ import logging
 import os
 import requests
 from dotenv import load_dotenv
-
+from utils.text_filter import sanitize_text
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -23,9 +23,12 @@ class PriorityTelegramPublisher:
             )
 
     def _caption(self, post: dict) -> str:
+        safe_title = sanitize_text(post['title'])
+        safe_content = sanitize_text((post.get('content') or '')[:500])
+
         raw = (
-            f"📰 {post['title']}\n\n"
-            f"{(post.get('content') or '')[:500]}\n\n"
+            f"📰 {safe_title}\n\n"
+            f"{safe_content}\n\n"
             f"🔗 {post['url']}"
         )
         return raw[:_CAPTION_LIMIT]
