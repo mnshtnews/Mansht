@@ -4,7 +4,7 @@ from typing import Optional, Callable
 
 from PIL import Image, ImageDraw, ImageFilter
 from io import BytesIO
-
+from utils.text_filter import sanitize_text
 from image.text_formatter import prepare_ar_text, fit_text
 from utils.logger import logger
 
@@ -91,6 +91,7 @@ def _draw_title(
     box_h   = text_y2 - text_y1
 
     draw     = ImageDraw.Draw(final_img)
+    title = sanitize_text(title)
     ar_title = prepare_ar_text(title)
 
     font, lines, line_height = fit_text(
