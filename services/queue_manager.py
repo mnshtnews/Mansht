@@ -1,5 +1,6 @@
 import logging
 from typing import Optional
+
 from DB.db import db_execute
 from services.priority_engine import calculate_final_score
 
@@ -61,6 +62,7 @@ class QueueManager:
         )
 
     def reorder_queue(self) -> None:
+        
         db_execute(
             """
             UPDATE news_queue
@@ -70,10 +72,11 @@ class QueueManager:
         )
 
     def get_next_post(self) -> Optional[dict]:
-       
+        
         import psycopg2
         import os
         from psycopg2.extras import RealDictCursor
+        from config.settings import MAX_QUEUE_AGE_HOURS
 
         conn = psycopg2.connect(os.environ["DATABASE_URL"])
         try:
@@ -84,10 +87,20 @@ class QueueManager:
                     SELECT *
                     FROM news_queue
                     WHERE status = 'pending'
-                    ORDER BY final_score DESC, created_at ASC
+                    ORDER BY
+                        -- Overdue articles first (age > MAX_QUEUE_AGE_HOURS)
+                        CASE WHEN (EXTRACT(EPOCH FROM NOW()) - created_at) / 3600
+                                  > %(max_age)s
+                             THEN 0 ELSE 1
+                        END ASC,
+                        -- Among overdue: oldest first
+                        created_at ASC,
+                        -- Among normal: highest score first
+                        final_score DESC
                     LIMIT 1
                     FOR UPDATE SKIP LOCKED
-                    """
+                    """,
+                    {"max_age": MAX_QUEUE_AGE_HOURS},
                 )
                 row = cur.fetchone()
                 if not row:
