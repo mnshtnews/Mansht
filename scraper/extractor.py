@@ -7,13 +7,12 @@ from bs4 import BeautifulSoup
 from tenacity import retry, stop_after_attempt, wait_fixed
 from DB.db import db_execute
 from utils.logger import logger
-from utils.text_filter import sanitize_text
+
 BASE_URL = "https://mnsht.net"
 HEADERS  = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
 session = requests.Session()
 session.headers.update(HEADERS)
-
 
 
 
@@ -31,9 +30,7 @@ def clean_image_url(src: Optional[str]) -> Optional[str]:
 
 
 
-
 def news_exists(url: str, title: Optional[str] = None) -> bool:
-    
     if title:
         result = db_execute(
             "SELECT id FROM news WHERE url = %s OR title = %s LIMIT 1",
@@ -50,17 +47,16 @@ def news_exists(url: str, title: Optional[str] = None) -> bool:
 
 
 
-
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(5))
-def get_html() -> str:
-    
-    response = session.get(BASE_URL, timeout=(10, 30))
+def get_html(page: int = 1) -> str:
+
+    url = BASE_URL if page == 1 else f"{BASE_URL}/page/{page}"
+    response = session.get(url, timeout=(10, 30))
     response.raise_for_status()
     return response.text
 
 
 def fetch_article_content(url: str, max_words: int = 150) -> Optional[str]:
-    
     try:
         response = session.get(url, timeout=15)
         response.raise_for_status()
@@ -87,56 +83,75 @@ def fetch_article_content(url: str, max_words: int = 150) -> Optional[str]:
 
 
 
-def extract_news(html: str, limit: int = 5) -> list[dict]:
+def extract_news(html: str, limit: int = 5, max_pages: int = 3) -> list:
 
-    soup      = BeautifulSoup(html, "lxml")
-    cards     = soup.find_all("div", class_="item-card")
-    news_list: list[dict] = []
+    news_list: list = []
 
-    for card in cards:
-        if len(news_list) >= limit:
-            break
+    def _parse_page(page_html: str) -> bool:
 
+        soup  = BeautifulSoup(page_html, "lxml")
+        cards = soup.find_all("div", class_="item-card")
+        if not cards:
+            return False
+
+        for card in cards:
+            if len(news_list) >= limit:
+                break
+            try:
+                a_tag = card.find("a")
+                if not a_tag:
+                    continue
+
+                url = urljoin(BASE_URL, str(a_tag.get("href") or ""))
+                if not url or url == BASE_URL:
+                    continue
+
+                h3    = card.find("h3")
+                title = clean_text(h3.get_text(strip=True)) if h3 else "بدون عنوان"
+
+                if news_exists(url, title):
+                    continue
+
+                img_tag     = card.find("img")
+                raw_img_src: Optional[str] = None
+                if img_tag:
+                    _src = img_tag.get("data-src") or img_tag.get("src")
+                    raw_img_src = str(_src) if _src is not None else None
+
+                final_image = clean_image_url(raw_img_src)
+                if final_image and "logo" in final_image.lower():
+                    final_image = None
+
+                content = fetch_article_content(url)
+
+                news_list.append({
+                    "title":   clean_text(title),
+                    "url":     url,
+                    "image":   final_image,
+                    "content": clean_text(content) if content else None,
+                })
+
+            except Exception as exc:
+                logger.error(f"❌ Card parse error: {exc}")
+
+        return True
+
+    has_cards = _parse_page(html)
+
+    page = 2
+    while has_cards and len(news_list) < limit and page <= max_pages:
+        logger.info(f"🔄 Fetching page {page} to find more new articles...")
         try:
-            a_tag = card.find("a")
-            if not a_tag:
-                continue
-
-            url = urljoin(BASE_URL, str(a_tag.get("href") or ""))
-            if not url or url == BASE_URL:
-                continue
-
-            h3    = card.find("h3")
-            title = sanitize_text(
-                clean_text(h3.get_text(strip=True))
-            ) if h3 else "بدون عنوان"
-
-            if news_exists(url, title):
-                continue
-
-            img_tag     = card.find("img")
-            raw_img_src: Optional[str] = None
-            if img_tag:
-                _src = img_tag.get("data-src") or img_tag.get("src")
-                raw_img_src = str(_src) if _src is not None else None
-
-            final_image = clean_image_url(raw_img_src)
-            if final_image and "logo" in final_image.lower():
-                final_image = None
-
-            content = fetch_article_content(url)
-
-            if content:
-                content = sanitize_text(content)
-
-            news_list.append({
-                "title": sanitize_text(clean_text(title)),
-                "url":     url,
-                "image":   final_image,
-                "content": sanitize_text(clean_text(content)) if content else None,
-            })
-
+            page_html = get_html(page)
+            has_cards = _parse_page(page_html)
         except Exception as exc:
-            logger.error(f"❌ Card parse error: {exc}")
+            logger.warning(f"⚠️ Page {page} fetch failed: {exc}")
+            break
+        page += 1
+
+    if page > 2:
+        logger.info(
+            f"📄 Scanned {page - 1} pages | found {len(news_list)} new articles"
+        )
 
     return news_list
