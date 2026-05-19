@@ -32,8 +32,7 @@ INSTANT_PUBLISH_KEYWORDS: list[str] = [
     "منصور بن محمد بن راشد",
 ]
 
-# ── Publishing window ─────────────────────────────────────────────────────────
-FACEBOOK_START_DATE    = datetime(2026, 5, 15)
+FACEBOOK_START_DATE    = datetime(2026, 5, 20)
 FACEBOOK_END_DATE      = datetime(2026, 5, 30)
 ENABLE_FACEBOOK_POSTING = True
 
@@ -41,9 +40,12 @@ SCRAPE_INTERVAL_MIN = 60
 SCRAPE_INTERVAL_MAX = 120
 
 
-MAX_QUEUE_AGE_HOURS = 2
+MAX_QUEUE_AGE_HOURS = 3
 
-AGING_MULTIPLIER = 0.12   
+
+MAX_SCRAPE_PAGES = 3
+
+AGING_MULTIPLIER = 0.12 
 
 KEYWORD_PRIORITY = {
     20: ["محمد بن زايد آل نهيان"],
