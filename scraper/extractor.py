@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from tenacity import retry, stop_after_attempt, wait_fixed
 from DB.db import db_execute
 from utils.logger import logger
-
+from utils.text_filter import sanitize_text
 BASE_URL = "https://mnsht.net"
 HEADERS  = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
@@ -107,7 +107,9 @@ def extract_news(html: str, limit: int = 5) -> list[dict]:
                 continue
 
             h3    = card.find("h3")
-            title = clean_text(h3.get_text(strip=True)) if h3 else "بدون عنوان"
+            title = sanitize_text(
+                clean_text(h3.get_text(strip=True))
+            ) if h3 else "بدون عنوان"
 
             if news_exists(url, title):
                 continue
@@ -124,11 +126,14 @@ def extract_news(html: str, limit: int = 5) -> list[dict]:
 
             content = fetch_article_content(url)
 
+            if content:
+                content = sanitize_text(content)
+
             news_list.append({
-                "title":   clean_text(title),
+                "title": sanitize_text(clean_text(title)),
                 "url":     url,
                 "image":   final_image,
-                "content": clean_text(content) if content else None,
+                "content": sanitize_text(clean_text(content)) if content else None,
             })
 
         except Exception as exc:
