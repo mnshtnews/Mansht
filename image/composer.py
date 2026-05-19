@@ -1,8 +1,10 @@
 import io
 import os
 from typing import Optional, Callable
+
 from PIL import Image, ImageDraw, ImageFilter
 from io import BytesIO
+
 from image.text_formatter import prepare_ar_text, fit_text
 from utils.logger import logger
 
@@ -12,7 +14,7 @@ _BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _FONT_CANDIDATES = [
     os.path.join(_BASE_DIR, "Cairo-ExtraBold.ttf"),
     os.path.join(_BASE_DIR, "Cairo-Bold.ttf"),
-    os.path.join(_BASE_DIR, "Cairo-Black.ttf"),   # original fallback
+    os.path.join(_BASE_DIR, "Cairo-Black.ttf"),  
 ]
 
 FONT_PATH: str = next((p for p in _FONT_CANDIDATES if os.path.exists(p)), "")
@@ -34,7 +36,7 @@ def _build_image_layer(
     news_img: Optional[Image.Image],
     image_box: tuple,
 ) -> Image.Image:
-    """Paste the blurred-BG + sharp-FG article image into *base*."""
+
 
     if not news_img:
         return base
@@ -46,7 +48,7 @@ def _build_image_layer(
     img_ratio    = img_w / img_h
     box_ratio    = box_w / box_h
 
-   
+
     if img_ratio > box_ratio:
         bg_h, bg_w = box_h, int(box_h * img_ratio)
     else:
@@ -59,7 +61,7 @@ def _build_image_layer(
     overlay = Image.new("RGBA", (box_w, box_h), (0, 0, 0, 80))
     bg = Image.alpha_composite(bg, overlay)
 
-  
+
     if img_ratio > box_ratio:
         fg_w, fg_h = box_w, int(box_w / img_ratio)
     else:
@@ -82,7 +84,7 @@ def _draw_title(
     title: str,
     text_box: tuple,
 ) -> Image.Image:
-   
+
 
     text_x1, text_y1, text_x2, text_y2 = text_box
     box_w   = text_x2 - text_x1
@@ -113,9 +115,9 @@ def _draw_title(
         w     = bbox[2] - bbox[0]
         x     = text_x1 + ((box_w - w) // 2)
 
-        # Drop shadow
+
         draw.text((x + 2, y + 2), line, font=font, fill=(0, 0, 0))
-        # Main text (bold stroke gives extra weight on top of the Bold font)
+
         draw.text((x, y), line, font=font, fill=TEXT_COLOR, stroke_width=1, stroke_fill=TEXT_COLOR)
 
         y += line_height
@@ -138,7 +140,7 @@ def generate_post_image(
     send_telegram_fn: Optional[Callable] = None,
     send_to_telegram: bool = True,
 ) -> Optional[str]:
-   
+    
     import traceback
 
     logger.info(f"🎨 Generating image | category={category} | id={news_id}")
@@ -148,7 +150,6 @@ def generate_post_image(
 
         image_box = config["image_box"]
         text_box  = config["text_box"]
-
 
         template_path = config.get("template", "")
         if not template_path or not os.path.exists(template_path):
@@ -165,6 +166,7 @@ def generate_post_image(
                 news_img = Image.open(BytesIO(resp.content)).convert("RGBA")
             except Exception as exc:
                 logger.warning(f"⚠️ Image download failed: {exc}")
+                return None
 
         base = Image.new("RGBA", template.size, (0, 0, 0, 0))
         base.paste(template, (0, 0))
