@@ -32,7 +32,7 @@ INSTANT_PUBLISH_KEYWORDS: list[str] = [
     "منصور بن محمد بن راشد",
 ]
 
-FACEBOOK_START_DATE    = datetime(2026, 5, 20)
+FACEBOOK_START_DATE    = datetime(2026, 5, 22)
 FACEBOOK_END_DATE      = datetime(2026, 5, 30)
 ENABLE_FACEBOOK_POSTING = True
 
